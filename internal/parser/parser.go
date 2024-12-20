@@ -14,20 +14,21 @@ import (
 
 func Parse(reader io.Reader) ([]statement.IStatement, error) {
 	scanner := bufio.NewScanner(reader)
-	instructions := []statement.IStatement{}
+	statements := []statement.IStatement{}
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		ins := parseLine(line)
-		if ins != nil {
-			instructions = append(instructions, ins)
+		statement := parseLine(line)
+		if statement != nil {
+			statements = append(statements, statement)
+			fmt.Printf("statement: %+v\n", statement)
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return instructions, err
+		return statements, err
 	}
-	return instructions, nil
+	return statements, nil
 }
 
 func parseLine(line string) statement.IStatement {
@@ -157,19 +158,7 @@ func parseAddress(address string) statement.Address {
 }
 
 func parseDirective(label, mnemonic string, args []string) statement.IStatement {
-	return statement.NewDirective(label, mnemonic, parseLiteral(args))
-}
-
-func parseLiteral(args []string) int {
-	if len(args) == 0 {
-		return 0
-	}
-	arg := args[0]
-	value, err := strconv.ParseInt(arg, 10, 24)
-	if err != nil {
-		panic(err)
-	}
-	return int(value)
+	return statement.NewDirective(label, mnemonic, parseAddress(args[0]))
 }
 
 func parseStorage(label, mnemonic string, args []string) statement.IStatement {
@@ -177,8 +166,11 @@ func parseStorage(label, mnemonic string, args []string) statement.IStatement {
 }
 
 func parseData(arg string) []byte {
+	value, err := strconv.ParseInt(arg, 10, 24)
+	if err == nil {
+		return []byte{byte(value >> 16), byte(value >> 8), byte(value)}
+	}
 	/*
-		TODO: handle longer literals
 		byte[] parseData()
 		– C'<chars>' … ASCII encoding
 		– X'<hex>' … hex encoding
