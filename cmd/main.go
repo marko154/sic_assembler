@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	assembler "sic_assembler/internal"
+	"strings"
 )
 
 func main() {
@@ -32,6 +33,14 @@ func main() {
 		return
 	}
 
-	ass := assembler.NewAssembler()
+	outfilename := strings.Replace(filename, "asm", "obj", 1)
+	outfile, err := os.Create(outfilename)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating output file: %s\n", err)
+		return
+	}
+
+	ass := assembler.NewAssembler(outfile)
 	ass.Assemble(file)
 }
