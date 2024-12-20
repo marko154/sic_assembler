@@ -10,7 +10,9 @@ type SymTable struct {
 }
 
 func NewSymTable() *SymTable {
-	return &SymTable{}
+	return &SymTable{
+		table: make(map[string]int),
+	}
 }
 
 func (s *SymTable) Set(label string, address int) {
