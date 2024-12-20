@@ -1,4 +1,8 @@
-package assembler
+package symtable
+
+const (
+	UNKNOWN = -1
+)
 
 type SymTable struct {
 	// maps lablel to address
@@ -16,4 +20,9 @@ func (s *SymTable) Set(label string, address int) {
 func (s *SymTable) Get(label string) (int, bool) {
 	value, ok := s.table[label]
 	return value, ok
+}
+
+func (s *SymTable) Has(label string) bool {
+	_, ok := s.table[label]
+	return ok
 }
