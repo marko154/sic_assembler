@@ -43,7 +43,7 @@ func (i *InstructionF3) EmitCode(symtab symtable.SymTable, base, locctr int) []b
 		byte3 = byte(offset)
 		byte2 |= 0x40
 	} else if 0 <= address && address < 4096 {
-		// direct (absolute)
+		// direct (absolute) TODO: create M record for this (only if address was label)
 		byte2 |= 0x0F & byte(address>>8)
 		byte3 = byte(address)
 	} else {

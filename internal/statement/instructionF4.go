@@ -36,6 +36,7 @@ func (i *InstructionF4) EmitCode(symtab symtable.SymTable, base, locctr int) []b
 	byte3 = byte(address >> 8)
 	byte4 = byte(address)
 
+	// TODO: create M record for this (only if address was label)
 	if i.IsIndexed {
 		byte2 |= 0x80
 	}

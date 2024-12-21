@@ -26,21 +26,24 @@ func main() {
 		return
 	}
 
-	filename := flag.Arg(0)
-	file, err := os.Open(filename)
+	infilename := flag.Arg(0)
+	infile, err := os.Open(infilename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		return
 	}
+	defer infile.Close()
 
-	outfilename := strings.Replace(filename, "asm", "obj", 1)
+	outfilename := strings.Replace(infilename, "asm", "obj", 1)
 	outfile, err := os.Create(outfilename)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating output file: %s\n", err)
 		return
 	}
+	defer outfile.Close()
+	fmt.Printf("Output file: %s\n", outfilename)
 
-	ass := assembler.NewAssembler(outfile)
-	ass.Assemble(file)
+	assembler := assembler.NewAssembler(outfile)
+	assembler.Assemble(infile)
 }

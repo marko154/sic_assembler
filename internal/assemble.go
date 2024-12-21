@@ -1,6 +1,7 @@
 package assembler
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"sic_assembler/internal/parser"
@@ -11,14 +12,14 @@ import (
 type Assembler struct {
 	program  []statement.IStatement
 	symtable *symtable.SymTable
-	rw       *RecordWriter
+	writer   *bufio.Writer
 }
 
 func NewAssembler(writer io.Writer) *Assembler {
 	return &Assembler{
 		program:  []statement.IStatement{},
 		symtable: symtable.NewSymTable(),
-		rw:       NewRecordWriter(writer),
+		writer:   bufio.NewWriter(writer),
 	}
 }
 
@@ -54,17 +55,27 @@ func (a *Assembler) activate() {
 func (a *Assembler) resolve() {
 	base := 0
 	locctr := 0
+	records := []Record{}
+	builder := NewTRecordBuilder()
+	var hRecord *HRecord
+	// TODO: m records
+	// relocTable := map[int]int{}
 
-	// check if any symbol remains unresolved
 	for _, stmt := range a.program {
 		if dir, ok := stmt.(*statement.Directive); ok {
 			switch dir.Mnemonic {
 			case "START":
-				a.rw.WriteHRecord(dir.Operand)
+				hRecord = NewHRecord(dir.Label, dir.ResolveOperand(a.symtable))
+				records = append(records, hRecord)
 			case "END":
-				a.rw.WriteERecord(dir.Operand)
+				for _, record := range builder.GetRecords() {
+					hRecord.length += len(record.text)
+					records = append(records, record)
+				}
+				records = append(records, &ERecord{dir.ResolveOperand(a.symtable)})
+				a.WriteRecords(records)
 			case "BASE":
-				base = dir.Operand
+				base = dir.ResolveOperand(a.symtable)
 			case "NOBASE":
 				base = 0
 			case "LTORG":
@@ -74,9 +85,21 @@ func (a *Assembler) resolve() {
 				panic("EQU directive not supported")
 			}
 		}
-
+		prevLocctr := locctr
 		locctr = stmt.GetLocctr(locctr)
 		bytes := stmt.EmitCode(*a.symtable, base, locctr)
-		a.rw.WriteCode(locctr, bytes)
+		builder.WriteCode(prevLocctr, bytes)
+		fmt.Printf("locctr: %d, bytes: %v\n", prevLocctr, bytes)
 	}
+}
+
+func (a *Assembler) WriteRecords(records []Record) {
+	for _, record := range records {
+		line := record.Serialize()
+		_, err := a.writer.WriteString(line + "\n")
+		if err != nil {
+			panic(err)
+		}
+	}
+	a.writer.Flush()
 }

@@ -162,12 +162,16 @@ func parseDirective(label, mnemonic string, args []string) statement.IStatement 
 }
 
 func parseStorage(label, mnemonic string, args []string) statement.IStatement {
-	return statement.NewStorage(label, mnemonic, parseData(args[0]))
+	return statement.NewStorage(label, mnemonic, parseData(mnemonic, args[0]))
 }
 
-func parseData(arg string) []byte {
+func parseData(mnemonic, arg string) []byte {
 	value, err := strconv.ParseInt(arg, 10, 24)
 	if err == nil {
+		if mnemonic == "BYTE" {
+			return []byte{byte(value)}
+		}
+		// WORD
 		return []byte{byte(value >> 16), byte(value >> 8), byte(value)}
 	}
 	/*
