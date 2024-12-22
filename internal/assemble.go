@@ -55,7 +55,6 @@ func (a *Assembler) activate() {
 func (a *Assembler) resolve() {
 	base := 0
 	locctr := 0
-	records := []Record{}
 	builder := NewTRecordBuilder()
 	var hRecord *HRecord
 	// TODO: m records
@@ -66,7 +65,6 @@ func (a *Assembler) resolve() {
 			switch dir.Mnemonic {
 			case "START":
 				hRecord = NewHRecord(dir.Label, dir.ResolveOperand(a.symtable))
-				records = append(records, hRecord)
 			case "BASE":
 				base = dir.ResolveOperand(a.symtable)
 			case "NOBASE":
@@ -77,12 +75,8 @@ func (a *Assembler) resolve() {
 				// TODO: add to symtable
 				panic("EQU directive not supported")
 			case "END":
-				for _, record := range builder.GetRecords() {
-					hRecord.endAddress = record.address + len(record.text)
-					records = append(records, record)
-				}
-				records = append(records, &ERecord{dir.ResolveOperand(a.symtable)})
-				a.WriteRecords(records)
+				erecord := &ERecord{dir.ResolveOperand(a.symtable)}
+				a.WriteRecords(hRecord, builder.GetRecords(), relocationTable, erecord)
 			}
 		}
 		prevLocctr := locctr
@@ -93,7 +87,19 @@ func (a *Assembler) resolve() {
 	}
 }
 
-func (a *Assembler) WriteRecords(records []Record) {
+func (a *Assembler) WriteRecords(hrecord *HRecord, trecords []*TRecord, relocationTable map[int]int, erecord *ERecord) {
+	records := []Record{hrecord}
+	for _, record := range trecords {
+		hrecord.endAddress = record.address + len(record.text)
+		records = append(records, record)
+	}
+
+	for address, nibbles := range relocationTable {
+		records = append(records, &MRecord{address, nibbles})
+	}
+
+	records = append(records, erecord)
+
 	for _, record := range records {
 		line := record.Serialize()
 		_, err := a.writer.WriteString(line + "\n")

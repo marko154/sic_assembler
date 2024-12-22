@@ -58,7 +58,7 @@ func (i *InstructionF3) resolveLabel(address int, base, locctr int, relocTable m
 		byte2 |= 0x0F & byte(offset>>8)
 		byte3 = byte(offset)
 		byte2 |= 0x20
-	} else if 0 <= address-base && address-base < 4096 {
+	} else if base != -1 && 0 <= address-base && address-base < 4096 {
 		// base relative
 		offset := address - base
 		byte2 |= 0x0F & byte(offset>>8)
