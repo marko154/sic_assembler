@@ -59,7 +59,7 @@ func (a *Assembler) resolve() {
 	builder := NewTRecordBuilder()
 	var hRecord *HRecord
 	// TODO: m records
-	// relocTable := map[int]int{}
+	relocationTable := map[int]int{}
 
 	for _, stmt := range a.program {
 		if dir, ok := stmt.(*statement.Directive); ok {
@@ -67,13 +67,6 @@ func (a *Assembler) resolve() {
 			case "START":
 				hRecord = NewHRecord(dir.Label, dir.ResolveOperand(a.symtable))
 				records = append(records, hRecord)
-			case "END":
-				for _, record := range builder.GetRecords() {
-					hRecord.length += len(record.text)
-					records = append(records, record)
-				}
-				records = append(records, &ERecord{dir.ResolveOperand(a.symtable)})
-				a.WriteRecords(records)
 			case "BASE":
 				base = dir.ResolveOperand(a.symtable)
 			case "NOBASE":
@@ -83,13 +76,20 @@ func (a *Assembler) resolve() {
 			case "EQU":
 				// TODO: add to symtable
 				panic("EQU directive not supported")
+			case "END":
+				for _, record := range builder.GetRecords() {
+					hRecord.endAddress = record.address + len(record.text)
+					records = append(records, record)
+				}
+				records = append(records, &ERecord{dir.ResolveOperand(a.symtable)})
+				a.WriteRecords(records)
 			}
 		}
 		prevLocctr := locctr
 		locctr = stmt.GetLocctr(locctr)
-		bytes := stmt.EmitCode(*a.symtable, base, locctr)
+		bytes := stmt.EmitCode(*a.symtable, base, locctr, relocationTable)
+		fmt.Printf("writing bytes for instruction: %X\n", bytes)
 		builder.WriteCode(prevLocctr, bytes)
-		fmt.Printf("locctr: %d, bytes: %v\n", prevLocctr, bytes)
 	}
 }
 

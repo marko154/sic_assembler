@@ -16,7 +16,7 @@ func NewInstructionF1(label, mnemonic string, opcode byte) *InstuctionF1 {
 	}
 }
 
-func (i *InstuctionF1) EmitCode(symtable.SymTable, int, int) []byte {
+func (i *InstuctionF1) EmitCode(symtable.SymTable, int, int, map[int]int) []byte {
 	return []byte{i.Opcode}
 }
 

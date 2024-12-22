@@ -3,7 +3,7 @@ package statement
 import "sic_assembler/internal/symtable"
 
 type IStatement interface {
-	EmitCode(symtable.SymTable, int, int) []byte
+	EmitCode(symtable.SymTable, int, int, map[int]int) []byte
 	GetLabel() string
 	GetLocctr(int) int
 }
@@ -24,6 +24,10 @@ type Address interface {
 	isAddress()
 }
 
+type StorageOperand interface {
+	isStorageOperand()
+}
+
 type Label string
 
 func (l Label) isAddress() {}
@@ -31,3 +35,9 @@ func (l Label) isAddress() {}
 type Number int
 
 func (l Number) isAddress() {}
+
+func (l Number) isStorageOperand() {}
+
+type Data []byte
+
+func (l Data) isStorageOperand() {}

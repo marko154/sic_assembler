@@ -16,7 +16,7 @@ func NewDirective(label, mnemonic string, operand Address) *Directive {
 	}
 }
 
-func (i *Directive) EmitCode(symtable.SymTable, int, int) []byte {
+func (i *Directive) EmitCode(symtable.SymTable, int, int, map[int]int) []byte {
 	return []byte{}
 }
 

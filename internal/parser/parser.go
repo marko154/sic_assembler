@@ -34,7 +34,7 @@ func Parse(reader io.Reader) ([]statement.IStatement, error) {
 func parseLine(line string) statement.IStatement {
 	orig := line
 	line = stripComment(line)
-	pattern := regexp.MustCompile(`(?P<label>\w+)?\s+(?P<mnemonic>\+?\w+)\s+(?P<args>.+)?`)
+	pattern := regexp.MustCompile(`(?P<label>\w+)?\s+(?P<mnemonic>\+?\w+)\s*(?P<args>.+)?`)
 	matches := pattern.FindStringSubmatch(line)
 	if matches == nil {
 		fmt.Printf("No match '%v' (line): '%v' \n", orig, (line))
@@ -112,7 +112,10 @@ func parseRegister(reg string) byte {
 }
 
 func parseInstructionF3(label, mnemonic string, args []string, opcode byte) statement.IStatement {
-	operand := parseAddressOperand(args[0])
+	var operand statement.AddressOperand
+	if len(args) >= 1 {
+		operand = parseAddressOperand(args[0])
+	}
 	stmt := statement.NewInstructionF3(label, mnemonic, opcode, operand)
 	if len(args) == 2 {
 		stmt.IsIndexed = true
@@ -121,7 +124,10 @@ func parseInstructionF3(label, mnemonic string, args []string, opcode byte) stat
 }
 
 func parseInstructionF4(label, mnemonic string, args []string, opcode byte) statement.IStatement {
-	operand := parseAddressOperand(args[0])
+	var operand statement.AddressOperand
+	if len(args) >= 1 {
+		operand = parseAddressOperand(args[0])
+	}
 	stmt := statement.NewInstructionF4(label, mnemonic, opcode, operand)
 	if len(args) == 2 {
 		stmt.IsIndexed = true
@@ -131,6 +137,12 @@ func parseInstructionF4(label, mnemonic string, args []string, opcode byte) stat
 
 func parseAddressOperand(operand string) statement.AddressOperand {
 	mode := statement.NORMAL
+	if len(operand) == 0 {
+		return statement.AddressOperand{
+			Mode:    mode,
+			Address: statement.Number(0),
+		}
+	}
 	if operand[0] == '#' {
 		operand = operand[1:]
 		mode = statement.IMMEDIATE
@@ -150,6 +162,10 @@ func parseAddress(address string) statement.Address {
 	if unicode.IsLetter(rune(address[0])) {
 		return statement.Label(address)
 	}
+	return parseNumber(address)
+}
+
+func parseNumber(address string) statement.Number {
 	literal, err := strconv.ParseInt(address, 10, 32)
 	if err != nil {
 		panic(err)
@@ -162,10 +178,17 @@ func parseDirective(label, mnemonic string, args []string) statement.IStatement 
 }
 
 func parseStorage(label, mnemonic string, args []string) statement.IStatement {
-	return statement.NewStorage(label, mnemonic, parseData(mnemonic, args[0]))
+	return statement.NewStorage(label, mnemonic, parseStorageOperand(mnemonic, args[0]))
 }
 
-func parseData(mnemonic, arg string) []byte {
+func parseStorageOperand(mnemonic, arg string) statement.StorageOperand {
+	if mnemonic == "BYTE" || mnemonic == "WORD" {
+		return parseData(mnemonic, arg)
+	}
+	return parseNumber(arg)
+}
+
+func parseData(mnemonic, arg string) statement.Data {
 	value, err := strconv.ParseInt(arg, 10, 24)
 	if err == nil {
 		if mnemonic == "BYTE" {

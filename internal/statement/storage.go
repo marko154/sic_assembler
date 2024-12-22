@@ -5,19 +5,26 @@ import "sic_assembler/internal/symtable"
 type Storage struct {
 	Label    string
 	Mnemonic string
-	Data     []byte
+	Operand  StorageOperand
 }
 
-func NewStorage(label, mnemonic string, data []byte) *Storage {
+func NewStorage(label, mnemonic string, operand StorageOperand) *Storage {
 	return &Storage{
 		Label:    label,
 		Mnemonic: mnemonic,
-		Data:     data,
+		Operand:  operand,
 	}
 }
 
-func (i *Storage) EmitCode(symtable.SymTable, int, int) []byte {
-	return i.Data
+func (i *Storage) EmitCode(symtable.SymTable, int, int, map[int]int) []byte {
+	if i.Mnemonic == "RESW" || i.Mnemonic == "RESB" {
+		return []byte{}
+	}
+	switch v := i.Operand.(type) {
+	case Data:
+		return []byte(v)
+	}
+	panic("invalid storage operand")
 }
 
 func (i *Storage) GetLabel() string {
@@ -25,5 +32,14 @@ func (i *Storage) GetLabel() string {
 }
 
 func (i *Storage) GetLocctr(prevLocctr int) int {
-	return prevLocctr + len(i.Data)
+	if i.Mnemonic == "RESW" {
+		v := i.Operand.(Number)
+		return prevLocctr + 3*int(v)
+	}
+	if i.Mnemonic == "RESB" {
+		v := i.Operand.(Number)
+		return prevLocctr + int(v)
+	}
+	bytes := i.Operand.(Data)
+	return prevLocctr + len(bytes)
 }

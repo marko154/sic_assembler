@@ -22,17 +22,39 @@ func NewInstructionF3(label, mnemonic string, opcode byte, operand AddressOperan
 	}
 }
 
-func (i *InstructionF3) EmitCode(symtab symtable.SymTable, base, locctr int) []byte {
-	// ni x bp e
+func (i *InstructionF3) EmitCode(symtab symtable.SymTable, base, pc int, relocTable map[int]int) []byte {
 	byte1 := i.Opcode | i.Operand.Mode
-	address := i.resolveAddress(symtab)
+	byte2, byte3 := i.resolveAddress(symtab, base, pc, relocTable)
+	if i.IsIndexed {
+		byte2 |= 0x80
+	}
+	return []byte{byte1, byte2, byte3}
+}
 
+func (i *InstructionF3) resolveAddress(symtab symtable.SymTable, base, pc int, relocTable map[int]int) (byte, byte) {
+	switch v := i.Operand.Address.(type) {
+	case Label:
+		if address, ok := symtab.Get(string(v)); ok {
+			return i.resolveLabel(address, base, pc, relocTable)
+		}
+		panic(fmt.Sprintf("undefined symbol: %s", v))
+	case Number:
+		return byte((v >> 8) & 0x0F), byte(v)
+	}
+	if i.Mnemonic == "RSUB" {
+		return 0, 0
+	}
+	fmt.Printf("%+v\n", i)
+	panic("invalid address type")
+}
+
+func (i *InstructionF3) resolveLabel(address int, base, locctr int, relocTable map[int]int) (byte, byte) {
 	byte2 := byte(0)
 	byte3 := byte(0)
-
 	if -2048 <= address && address <= 2047 {
 		// pc relative
 		offset := address - locctr
+		// TODO: this is incorrect, immediate values should be calculated differently. how??
 		byte2 |= 0x0F & byte(offset>>8)
 		byte3 = byte(offset)
 		byte2 |= 0x20
@@ -46,6 +68,7 @@ func (i *InstructionF3) EmitCode(symtab symtable.SymTable, base, locctr int) []b
 		// direct (absolute) TODO: create M record for this (only if address was label)
 		byte2 |= 0x0F & byte(address>>8)
 		byte3 = byte(address)
+		relocTable[locctr+1] = 3
 	} else {
 		// TODO: optional - SIC FORMAT
 		panic(fmt.Sprintf("address out of range %v", address))
@@ -54,20 +77,8 @@ func (i *InstructionF3) EmitCode(symtab symtable.SymTable, base, locctr int) []b
 	if i.IsIndexed {
 		byte2 |= 0x80
 	}
-	return []byte{byte1, byte2, byte3}
-}
+	return byte2, byte3
 
-func (i *InstructionF3) resolveAddress(symtab symtable.SymTable) int {
-	switch v := i.Operand.Address.(type) {
-	case Label:
-		if address, ok := symtab.Get(string(v)); ok {
-			return address
-		}
-		panic(fmt.Sprintf("undefined symbol: %s", v))
-	case Number:
-		return int(v)
-	}
-	panic("invalid address type")
 }
 
 func (i *InstructionF3) GetLabel() string {

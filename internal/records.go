@@ -15,16 +15,16 @@ type Record interface {
 }
 
 type HRecord struct {
-	name    string
-	address int
-	length  int
+	name         string
+	startAddress int
+	endAddress   int
 }
 
 func NewHRecord(name string, address int) *HRecord {
 	return &HRecord{
-		name:    name,
-		address: address,
-		length:  0,
+		name:         name,
+		startAddress: address,
+		endAddress:   0,
 	}
 }
 
@@ -33,7 +33,7 @@ func (r *HRecord) Serialize() string {
 	if len(name) == 0 {
 		name = "null"
 	}
-	return fmt.Sprintf("H%-6s%06X%06X", name, r.address, r.length)
+	return fmt.Sprintf("H%-6s%06X%06X", name, r.startAddress, r.endAddress)
 }
 
 type ERecord struct {
@@ -81,7 +81,6 @@ func (b *TRecordBuilder) GetRecords() []*TRecord {
 
 func (w *TRecordBuilder) WriteCode(address int, bytes []byte) {
 	// flush current T record if there is a gap
-	fmt.Println("writing code at address", address, bytes)
 	lastAddress := w.currTRecord.address + len(w.currTRecord.text)
 	if address > lastAddress {
 		w.appendRecord()
@@ -92,7 +91,6 @@ func (w *TRecordBuilder) WriteCode(address int, bytes []byte) {
 	for len(bytes) > 0 {
 		remainingSpace := T_RECORD_MAX_SIZE - len(w.currTRecord.text)
 		bytesToWrite := min(remainingSpace, len(bytes))
-		fmt.Println("buffering", bytesToWrite, "bytes")
 		w.currTRecord.text = append(w.currTRecord.text, bytes[:bytesToWrite]...)
 		bytes = bytes[bytesToWrite:]
 

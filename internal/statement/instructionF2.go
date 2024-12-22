@@ -20,7 +20,7 @@ func NewInstructionF2(label, mnemonic string, opcode, operand1, operand2 byte) *
 	}
 }
 
-func (i *InstructionF2) EmitCode(symtable.SymTable, int, int) []byte {
+func (i *InstructionF2) EmitCode(symtable.SymTable, int, int, map[int]int) []byte {
 	return []byte{i.Opcode, (i.Operand1 << 4) | i.Operand2}
 }
 
