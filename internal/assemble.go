@@ -53,7 +53,7 @@ func (a *Assembler) activate() {
 
 // second pass - resolve symbols with unknown addresses
 func (a *Assembler) resolve() {
-	base := 0
+	base := -1
 	locctr := 0
 	builder := NewTRecordBuilder()
 	var hRecord *HRecord
@@ -68,7 +68,7 @@ func (a *Assembler) resolve() {
 			case "BASE":
 				base = dir.ResolveOperand(a.symtable)
 			case "NOBASE":
-				base = 0
+				base = -1
 			case "LTORG":
 				panic("LTORG directive not supported")
 			case "EQU":
@@ -87,7 +87,12 @@ func (a *Assembler) resolve() {
 	}
 }
 
-func (a *Assembler) WriteRecords(hrecord *HRecord, trecords []*TRecord, relocationTable map[int]int, erecord *ERecord) {
+func (a *Assembler) WriteRecords(
+	hrecord *HRecord,
+	trecords []*TRecord,
+	relocationTable map[int]int,
+	erecord *ERecord,
+) {
 	records := []Record{hrecord}
 	for _, record := range trecords {
 		hrecord.endAddress = record.address + len(record.text)

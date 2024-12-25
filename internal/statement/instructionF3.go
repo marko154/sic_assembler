@@ -54,7 +54,6 @@ func (i *InstructionF3) resolveLabel(address int, base, locctr int, relocTable m
 	if -2048 <= address && address <= 2047 {
 		// pc relative
 		offset := address - locctr
-		// TODO: this is incorrect, immediate values should be calculated differently. how??
 		byte2 |= 0x0F & byte(offset>>8)
 		byte3 = byte(offset)
 		byte2 |= 0x20
@@ -65,10 +64,10 @@ func (i *InstructionF3) resolveLabel(address int, base, locctr int, relocTable m
 		byte3 = byte(offset)
 		byte2 |= 0x40
 	} else if 0 <= address && address < 4096 {
-		// direct (absolute) TODO: create M record for this (only if address was label)
+		// direct (absolute)
 		byte2 |= 0x0F & byte(address>>8)
 		byte3 = byte(address)
-		relocTable[locctr+1] = 3
+		relocTable[locctr-2] = 3
 	} else {
 		// TODO: optional - SIC FORMAT
 		panic(fmt.Sprintf("address out of range %v", address))
