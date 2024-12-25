@@ -10,16 +10,18 @@ import (
 )
 
 type Assembler struct {
-	program  []statement.IStatement
-	symtable *symtable.SymTable
-	writer   *bufio.Writer
+	program   []statement.IStatement
+	symtable  *symtable.SymTable
+	writer    *bufio.Writer
+	lstWriter *bufio.Writer
 }
 
-func NewAssembler(writer io.Writer) *Assembler {
+func NewAssembler(writer, lsWriter io.Writer) *Assembler {
 	return &Assembler{
-		program:  []statement.IStatement{},
-		symtable: symtable.NewSymTable(),
-		writer:   bufio.NewWriter(writer),
+		program:   []statement.IStatement{},
+		symtable:  symtable.NewSymTable(),
+		writer:    bufio.NewWriter(writer),
+		lstWriter: bufio.NewWriter(lsWriter),
 	}
 }
 
@@ -57,7 +59,7 @@ func (a *Assembler) resolve() {
 	locctr := 0
 	builder := NewTRecordBuilder()
 	var hRecord *HRecord
-	// TODO: m records
+	// TODO: m records order
 	relocationTable := map[int]int{}
 
 	for _, stmt := range a.program {
@@ -82,9 +84,14 @@ func (a *Assembler) resolve() {
 		prevLocctr := locctr
 		locctr = stmt.GetLocctr(locctr)
 		bytes := stmt.EmitCode(*a.symtable, base, locctr, relocationTable)
-		fmt.Printf("writing bytes for instruction: %X\n", bytes)
+		a.writeDebugInfo(prevLocctr, bytes, stmt)
 		builder.WriteCode(prevLocctr, bytes)
+
+		fmt.Printf("writing bytes for instruction: %X\n", bytes)
 	}
+
+	a.writer.Flush()
+	a.lstWriter.Flush()
 }
 
 func (a *Assembler) WriteRecords(
@@ -112,5 +119,18 @@ func (a *Assembler) WriteRecords(
 			panic(err)
 		}
 	}
-	a.writer.Flush()
+}
+
+func (a *Assembler) writeDebugInfo(locctr int, bytes []byte, stmt statement.IStatement) {
+	// address  emitted_code    "source code line" -> filename.lst:line_number
+	output := fmt.Sprintf("%X", bytes)
+	if len(output) == 0 {
+		output = "-"
+	}
+	_, err := a.lstWriter.WriteString(
+		fmt.Sprintf("%06X\t%-10s\t%s\n", locctr, output, stmt.GetSource()),
+	)
+	if err != nil {
+		panic(fmt.Sprintf("Error writing to lst file: %s", err))
+	}
 }

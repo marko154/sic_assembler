@@ -6,13 +6,15 @@ type Directive struct {
 	Label    string
 	Mnemonic string
 	Operand  Address
+	Source   string
 }
 
-func NewDirective(label, mnemonic string, operand Address) *Directive {
+func NewDirective(label, mnemonic string, operand Address, source string) *Directive {
 	return &Directive{
 		Label:    label,
 		Mnemonic: mnemonic,
 		Operand:  operand,
+		Source:   source,
 	}
 }
 
@@ -46,4 +48,8 @@ func (i *Directive) GetLocctr(prevLocctr int) int {
 		return int(value)
 	}
 	return prevLocctr
+}
+
+func (i *Directive) GetSource() string {
+	return i.Source
 }

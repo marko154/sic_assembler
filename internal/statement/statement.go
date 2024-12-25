@@ -6,6 +6,7 @@ type IStatement interface {
 	EmitCode(symtable.SymTable, int, int, map[int]int) []byte
 	GetLabel() string
 	GetLocctr(int) int
+	GetSource() string
 }
 
 const (

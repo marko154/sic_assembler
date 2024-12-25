@@ -6,13 +6,15 @@ type Storage struct {
 	Label    string
 	Mnemonic string
 	Operand  StorageOperand
+	Source   string
 }
 
-func NewStorage(label, mnemonic string, operand StorageOperand) *Storage {
+func NewStorage(label, mnemonic string, operand StorageOperand, source string) *Storage {
 	return &Storage{
 		Label:    label,
 		Mnemonic: mnemonic,
 		Operand:  operand,
+		Source:   source,
 	}
 }
 
@@ -42,4 +44,8 @@ func (i *Storage) GetLocctr(prevLocctr int) int {
 	}
 	bytes := i.Operand.(Data)
 	return prevLocctr + len(bytes)
+}
+
+func (i *Storage) GetSource() string {
+	return i.Source
 }

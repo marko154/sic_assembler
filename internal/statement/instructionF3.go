@@ -11,14 +11,16 @@ type InstructionF3 struct {
 	Opcode    byte
 	Operand   AddressOperand
 	IsIndexed bool
+	Source    string
 }
 
-func NewInstructionF3(label, mnemonic string, opcode byte, operand AddressOperand) *InstructionF3 {
+func NewInstructionF3(label, mnemonic string, opcode byte, operand AddressOperand, source string) *InstructionF3 {
 	return &InstructionF3{
 		Label:    label,
 		Mnemonic: mnemonic,
 		Opcode:   opcode,
 		Operand:  operand,
+		Source:   source,
 	}
 }
 
@@ -86,4 +88,8 @@ func (i *InstructionF3) GetLabel() string {
 
 func (i *InstructionF3) GetLocctr(prevLocctr int) int {
 	return prevLocctr + 3
+}
+
+func (i *InstructionF3) GetSource() string {
+	return i.Source
 }

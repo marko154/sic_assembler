@@ -38,12 +38,18 @@ func main() {
 	outfile, err := os.Create(outfilename)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating output file: %s\n", err)
-		return
+		panic(fmt.Sprintf("Error creating output file: %s", err))
 	}
 	defer outfile.Close()
-	fmt.Printf("Output file: %s\n", outfilename)
 
-	assembler := assembler.NewAssembler(outfile)
+	lstoutfilename := strings.Replace(infilename, "asm", "lst", 1)
+	lstoutfile, err := os.Create(lstoutfilename)
+
+	if err != nil {
+		panic(fmt.Sprintf("Error creating output file: %s", err))
+	}
+	defer lstoutfile.Close()
+
+	assembler := assembler.NewAssembler(outfile, lstoutfile)
 	assembler.Assemble(infile)
 }

@@ -11,8 +11,9 @@ PART 1:
 -   [x] razreševanje simbolov;
 -   [x] pisanje objektnih datotek z zapisi H, E, T in M (poenostavljeni);
 -   [x] handle EmitCode in instrution4 like linstruction3
--   [ ] lep izpis objektne in zbirne kode (kot datoteke .lst, ki jih ustvari SicTools).
+-   [x] lep izpis objektne in zbirne kode (kot datoteke .lst, ki jih ustvari SicTools).
 -   [ ] EQU (lahko samo z enostavnimi operandi – števila ali simboli)
+-   [ ] sorted modification records?
 
 PART 2:
 

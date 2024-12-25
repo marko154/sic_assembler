@@ -32,12 +32,12 @@ func Parse(reader io.Reader) ([]statement.IStatement, error) {
 }
 
 func parseLine(line string) statement.IStatement {
-	orig := line
+	sourceLine := line
 	line = stripComment(line)
 	pattern := regexp.MustCompile(`(?P<label>\w+)?\s+(?P<mnemonic>\+?\w+)\s*(?P<args>.+)?`)
 	matches := pattern.FindStringSubmatch(line)
 	if matches == nil {
-		fmt.Printf("No match '%v' (line): '%v' \n", orig, (line))
+		fmt.Printf("No match '%v' (line): '%v' \n", sourceLine, (line))
 		return nil
 	}
 
@@ -48,7 +48,7 @@ func parseLine(line string) statement.IStatement {
 	for _, arg := range strings.Split(matches[3], ",") {
 		args = append(args, strings.TrimSpace(arg))
 	}
-	return parseIStatement(label, mnemonic, args)
+	return parseIStatement(label, mnemonic, args, sourceLine)
 }
 
 func stripComment(line string) string {
@@ -56,7 +56,7 @@ func stripComment(line string) string {
 	return commentPattern.ReplaceAllString(line, "")
 }
 
-func parseIStatement(label, mnemonic string, args []string) statement.IStatement {
+func parseIStatement(label, mnemonic string, args []string, sourceLine string) statement.IStatement {
 	isExtended := false
 	if mnemonic[0] == '+' {
 		mnemonic = mnemonic[1:]
@@ -70,34 +70,34 @@ func parseIStatement(label, mnemonic string, args []string) statement.IStatement
 		}
 		switch format {
 		case 1:
-			return statement.NewInstructionF1(label, mnemonic, opInfo.Opcode)
+			return statement.NewInstructionF1(label, mnemonic, opInfo.Opcode, sourceLine)
 		case 2:
-			return parseInstructionF2(label, mnemonic, args, opInfo.Opcode)
+			return parseInstructionF2(label, mnemonic, args, opInfo.Opcode, sourceLine)
 		case 3:
-			return parseInstructionF3(label, mnemonic, args, opInfo.Opcode)
+			return parseInstructionF3(label, mnemonic, args, opInfo.Opcode, sourceLine)
 		case 4:
-			return parseInstructionF4(label, mnemonic, args, opInfo.Opcode)
+			return parseInstructionF4(label, mnemonic, args, opInfo.Opcode, sourceLine)
 		}
 	}
 
 	if _, ok := statement.DIRECTIVES[mnemonic]; ok {
-		return parseDirective(label, mnemonic, args)
+		return parseDirective(label, mnemonic, args, sourceLine)
 	}
 
 	if _, ok := statement.STORAGE[mnemonic]; ok {
-		return parseStorage(label, mnemonic, args)
+		return parseStorage(label, mnemonic, args, sourceLine)
 	}
 
 	return nil
 }
 
-func parseInstructionF2(label, mnemonic string, args []string, opcode byte) statement.IStatement {
+func parseInstructionF2(label, mnemonic string, args []string, opcode byte, source string) statement.IStatement {
 	operand1 := parseRegister(args[0])
 	operand2 := byte(0)
 	if len(args) == 2 {
 		operand2 = parseRegister(args[1])
 	}
-	return statement.NewInstructionF2(label, mnemonic, opcode, operand1, operand2)
+	return statement.NewInstructionF2(label, mnemonic, opcode, operand1, operand2, source)
 }
 
 func parseRegister(reg string) byte {
@@ -111,24 +111,24 @@ func parseRegister(reg string) byte {
 	return byte(literal)
 }
 
-func parseInstructionF3(label, mnemonic string, args []string, opcode byte) statement.IStatement {
+func parseInstructionF3(label, mnemonic string, args []string, opcode byte, source string) statement.IStatement {
 	var operand statement.AddressOperand
 	if len(args) >= 1 {
 		operand = parseAddressOperand(args[0])
 	}
-	stmt := statement.NewInstructionF3(label, mnemonic, opcode, operand)
+	stmt := statement.NewInstructionF3(label, mnemonic, opcode, operand, source)
 	if len(args) == 2 {
 		stmt.IsIndexed = true
 	}
 	return stmt
 }
 
-func parseInstructionF4(label, mnemonic string, args []string, opcode byte) statement.IStatement {
+func parseInstructionF4(label, mnemonic string, args []string, opcode byte, source string) statement.IStatement {
 	var operand statement.AddressOperand
 	if len(args) >= 1 {
 		operand = parseAddressOperand(args[0])
 	}
-	stmt := statement.NewInstructionF4(label, mnemonic, opcode, operand)
+	stmt := statement.NewInstructionF4(label, mnemonic, opcode, operand, source)
 	if len(args) == 2 {
 		stmt.IsIndexed = true
 	}
@@ -173,12 +173,12 @@ func parseNumber(address string) statement.Number {
 	return statement.Number(literal)
 }
 
-func parseDirective(label, mnemonic string, args []string) statement.IStatement {
-	return statement.NewDirective(label, mnemonic, parseAddress(args[0]))
+func parseDirective(label, mnemonic string, args []string, source string) statement.IStatement {
+	return statement.NewDirective(label, mnemonic, parseAddress(args[0]), source)
 }
 
-func parseStorage(label, mnemonic string, args []string) statement.IStatement {
-	return statement.NewStorage(label, mnemonic, parseStorageOperand(mnemonic, args[0]))
+func parseStorage(label, mnemonic string, args []string, source string) statement.IStatement {
+	return statement.NewStorage(label, mnemonic, parseStorageOperand(mnemonic, args[0]), source)
 }
 
 func parseStorageOperand(mnemonic, arg string) statement.StorageOperand {
