@@ -1,37 +1,38 @@
 ***** Section <default> *****
-Stats: size=3116  blocks=3116  symbols=11  literals=0  relocations=15
+Stats: size=3117  blocks=3117  symbols=11  literals=0  relocations=16
 Blocks
     name        start   size  #ins #dir #sto
-    <default>   00000  00C2C    37    4    1
+    <default>   00000  00C2D    37    4    1
 Symbols
     name         hex       dec  scope     kind      type      description
-    base      000035        53  local     relative  code      label
-    fact      00000C        12  local     relative  code      label
-    factRet   000038        56  local     relative  code      label
-    halt      000009         9  local     relative  code      label
+    base      000036        54  local     relative  code      label
+    fact      00000D        13  local     relative  code      label
+    factRet   000039        57  local     relative  code      label
+    halt      00000A        10  local     relative  code      label
     prog      000000         0  exported  relative  code      label
-    sinit     00003B        59  local     relative  code      label
-    sp        000C26      3110  local     relative  data      label
-    spop      00005C        92  local     relative  code      label
-    spush     00004A        74  local     relative  code      label
-    stack     00006E       110  local     relative  data      label
-    stackA    000C29      3113  local     relative  data      label
+    sinit     00003C        60  local     relative  code      label
+    sp        000C27      3111  local     relative  data      label
+    spop      00005D        93  local     relative  code      label
+    spush     00004B        75  local     relative  code      label
+    stack     00006F       111  local     relative  data      label
+    stackA    000C2A      3114  local     relative  data      label
 Literals
     label   definition
 Relocations
     address length flag symbol
-    00013        3
-    00019        3
-    00028        3
-    0002E        3
-    0003C        3
-    00042        3
-    00045        3
-    0004B        3
-    0004E        3
-    00054        3
-    00057        3
-    0005D        3
-    00060        3
-    00066        3
-    00069        3
+    00007        5
+    00014        3
+    0001A        3
+    00029        3
+    0002F        3
+    0003D        3
+    00043        3
+    00046        3
+    0004C        3
+    0004F        3
+    00055        3
+    00058        3
+    0005E        3
+    00061        3
+    00067        3
+    0006A        3

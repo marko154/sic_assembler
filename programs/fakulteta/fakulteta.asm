@@ -1,7 +1,7 @@
 prog	START   0
 	JSUB    sinit
 	LDA     #6
-	JSUB    fact
+	+JSUB    fact
 halt	J       halt
 
 fact	COMP    #0

@@ -48,7 +48,7 @@ func (i *InstructionF3) resolveAddress(symtab symtable.SymTable, base, pc int, r
 	panic("invalid address type")
 }
 
-func (i *InstructionF3) resolveLabel(address int, base, locctr int, relocTable map[int]int) (byte, byte) {
+func (i *InstructionF3) resolveLabel(address, base, locctr int, relocTable map[int]int) (byte, byte) {
 	byte2 := byte(0)
 	byte3 := byte(0)
 	if -2048 <= address && address <= 2047 {
@@ -69,8 +69,8 @@ func (i *InstructionF3) resolveLabel(address int, base, locctr int, relocTable m
 		byte3 = byte(address)
 		relocTable[locctr-2] = 3
 	} else {
-		// TODO: optional - SIC FORMAT
-		panic(fmt.Sprintf("address out of range %v", address))
+		// TODO: optional - try SIC FORMAT which has 15 bits
+		panic(fmt.Sprintf("address out of range '%v'", address))
 	}
 
 	if i.IsIndexed {
