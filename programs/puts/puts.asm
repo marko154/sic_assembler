@@ -1,5 +1,6 @@
 puts	START   0
 	CLEAR   X
+	LDA	expr
 loop	LDCH    txt, X
 	JSUB    putc
 	TIX     #len
@@ -20,5 +21,6 @@ nl	STA     nlA
 txt	BYTE    C'hello world'
 end	EQU     *
 len	EQU     end - txt
+expr	EQU     3 *  (len - 1)
 nlA	WORD	0
 	END     puts

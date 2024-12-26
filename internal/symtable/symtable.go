@@ -1,6 +1,10 @@
 package symtable
 
-import "sic_assembler/internal/expr"
+import (
+	"fmt"
+	"maps"
+	"sic_assembler/internal/expr"
+)
 
 const (
 	UNKNOWN = -1
@@ -27,16 +31,20 @@ func (s *SymTable) IsExpr(label string) bool {
 	return s.isExpr[label]
 }
 
-func (s *SymTable) Get(label string) (int, bool) {
-	value, ok := s.table[label]
-	return s.resolve(value), ok
+func (s *SymTable) Get(label string) int {
+	return s.resolve(expr.Label(label), map[expr.Label]bool{})
 }
 
-func (symtab *SymTable) resolve(expression expr.Expr) int {
+func (symtab *SymTable) resolve(expression expr.Expr, seen map[expr.Label]bool) int {
 	switch v := expression.(type) {
 	case expr.Label:
-		if value, ok := symtab.Get(string(v)); ok {
-			return value
+		if _, ok := seen[v]; ok {
+			panic(fmt.Sprintf("cyclical reference detected for label '%v': ", v))
+		}
+		nextSeen := maps.Clone(seen)
+		nextSeen[v] = true
+		if value, ok := symtab.table[string(v)]; ok {
+			return symtab.resolve(value, nextSeen)
 		}
 		panic("undefined symbol")
 	case expr.Number:
@@ -44,13 +52,13 @@ func (symtab *SymTable) resolve(expression expr.Expr) int {
 	case expr.BinOp:
 		switch v.Op {
 		case "+":
-			return symtab.resolve(v.Left) + symtab.resolve(v.Right)
+			return symtab.resolve(v.Left, seen) + symtab.resolve(v.Right, seen)
 		case "-":
-			return symtab.resolve(v.Left) - symtab.resolve(v.Right)
+			return symtab.resolve(v.Left, seen) - symtab.resolve(v.Right, seen)
 		case "*":
-			return symtab.resolve(v.Left) * symtab.resolve(v.Right)
+			return symtab.resolve(v.Left, seen) * symtab.resolve(v.Right, seen)
 		case "/":
-			return symtab.resolve(v.Left) / symtab.resolve(v.Right)
+			return symtab.resolve(v.Left, seen) / symtab.resolve(v.Right, seen)
 		}
 	}
 	panic("invalid address type")

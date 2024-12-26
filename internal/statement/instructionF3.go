@@ -36,20 +36,17 @@ func (i *InstructionF3) EmitCode(symtab symtable.SymTable, base, pc int, relocTa
 func (i *InstructionF3) resolveAddress(symtab symtable.SymTable, base, pc int, relocTable map[int]int) (byte, byte) {
 	switch v := i.Operand.Address.(type) {
 	case Label:
-		if address, ok := symtab.Get(string(v)); ok {
-			if symtab.IsExpr(string(v)) { // equ expressions are treated as number literals
-				return byte((address >> 8) & 0x0F), byte(address)
-			}
-			return i.resolveLabel(address, base, pc, relocTable)
+		address := symtab.Get(string(v))
+		if symtab.IsExpr(string(v)) { // EQU expressions are treated as number literals
+			return byte((address >> 8) & 0x0F), byte(address)
 		}
-		panic(fmt.Sprintf("undefined symbol: %s", v))
+		return i.resolveLabel(address, base, pc, relocTable)
 	case Number:
 		return byte((v >> 8) & 0x0F), byte(v)
 	}
 	if i.Mnemonic == "RSUB" {
 		return 0, 0
 	}
-	fmt.Printf("%+v\n", i)
 	panic("invalid address type")
 }
 

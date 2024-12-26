@@ -29,10 +29,7 @@ func (i *Directive) GetLabel() string {
 func (i *Directive) ResolveOperand(symtab *symtable.SymTable, pc int) int {
 	switch v := i.Operand.(type) {
 	case Label:
-		if value, ok := symtab.Get(string(v)); ok {
-			return value
-		}
-		panic("undefined symbol")
+		return symtab.Get(string(v))
 	case Number:
 		return int(v)
 	}

@@ -18,7 +18,7 @@ func ParseEQUExpr(input string, pc int) expr.Expr {
 	input = strings.ReplaceAll(input, "*", " * ")
 
 	tokens := strings.Fields(input)
-	fmt.Println("ParseEQUExpr: ", tokens)
+	fmt.Printf("parseEQUExpr: %+q\n", tokens)
 
 	_, expr := parseExpr(tokens, pc)
 	return expr
@@ -72,7 +72,7 @@ func parseTerm(tokens []string, pc int) ([]string, expr.Expr) {
 	}
 	if token == "(" {
 		tokensLeft, expr := parseExpr(tokens[1:], pc)
-		if tokens[0] != ")" {
+		if tokensLeft[0] != ")" {
 			panic("expected closing parenthesis")
 		}
 		return tokensLeft[1:], expr

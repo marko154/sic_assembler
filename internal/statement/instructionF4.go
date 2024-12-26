@@ -35,13 +35,11 @@ func (i *InstructionF4) EmitCode(symtab symtable.SymTable, base, pc int, relocTa
 func (i *InstructionF4) resolveAddress(symtab symtable.SymTable, pc int, relocTable map[int]int) (byte, byte, byte) {
 	switch v := i.Operand.Address.(type) {
 	case Label:
-		if address, ok := symtab.Get(string(v)); ok {
-			if symtab.IsExpr(string(v)) { // equ expressions are treated as number literals
-				return byte((address >> 16) & 0x0F), byte((address >> 8) & 0xFF), byte(address)
-			}
-			return i.resolveLabel(address, pc, relocTable)
+		address := symtab.Get(string(v))
+		if symtab.IsExpr(string(v)) { // EQU expressions are treated as number literals
+			return byte((address >> 16) & 0x0F), byte((address >> 8) & 0xFF), byte(address)
 		}
-		panic("undefined symbol")
+		return i.resolveLabel(address, pc, relocTable)
 	case Number:
 		return byte((v >> 16) & 0x0F), byte((v >> 8) & 0xFF), byte(v)
 	}
