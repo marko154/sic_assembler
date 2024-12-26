@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"maps"
 	"sic_assembler/internal/parser"
 	"sic_assembler/internal/statement"
 	"sic_assembler/internal/symtable"
+	"slices"
 	"unicode"
 )
 
@@ -60,7 +62,6 @@ func (a *Assembler) resolve() {
 	locctr := 0
 	builder := NewTRecordBuilder()
 	var hRecord *HRecord
-	// TODO: m records order
 	relocationTable := map[int]int{}
 
 	for _, stmt := range a.program {
@@ -106,9 +107,10 @@ func (a *Assembler) WriteRecords(
 		hrecord.endAddress = record.address + len(record.text)
 		records = append(records, record)
 	}
-
-	for address, nibbles := range relocationTable {
-		records = append(records, &MRecord{address, nibbles})
+	addresses := slices.Collect(maps.Keys(relocationTable))
+	slices.Sort(addresses)
+	for _, address := range addresses {
+		records = append(records, &MRecord{address: address, nibbles: relocationTable[address]})
 	}
 
 	records = append(records, erecord)

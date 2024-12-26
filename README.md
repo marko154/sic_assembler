@@ -13,7 +13,7 @@ PART 1:
 -   [x] handle EmitCode in instrution4 like linstruction3
 -   [x] lep izpis objektne in zbirne kode (kot datoteke .lst, ki jih ustvari SicTools).
 -   [ ] EQU (lahko samo z enostavnimi operandi – števila ali simboli)
--   [ ] sorted modification records?
+-   [x] sorted modification records?
 
 PART 2:
 
