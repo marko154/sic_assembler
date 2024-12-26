@@ -7,6 +7,7 @@ import (
 	"sic_assembler/internal/parser"
 	"sic_assembler/internal/statement"
 	"sic_assembler/internal/symtable"
+	"unicode"
 )
 
 type Assembler struct {
@@ -124,11 +125,13 @@ func (a *Assembler) WriteRecords(
 func (a *Assembler) writeDebugInfo(locctr int, bytes []byte, stmt statement.IStatement) {
 	// address  emitted_code    "source code line" -> filename.lst:line_number
 	output := fmt.Sprintf("%X", bytes)
-	if len(output) == 0 {
-		output = "-"
+	source := stmt.GetSource()
+	// i don't know why the lines are formatted wrong, and i dont really care
+	if unicode.IsSpace(rune(source[0])) {
+		source = "\t" + source
 	}
 	_, err := a.lstWriter.WriteString(
-		fmt.Sprintf("%06X\t%-10s\t%s\n", locctr, output, stmt.GetSource()),
+		fmt.Sprintf("%06X\t%-10s\t%s\n", locctr, output, source),
 	)
 	if err != nil {
 		panic(fmt.Sprintf("Error writing to lst file: %s", err))
