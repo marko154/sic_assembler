@@ -12,8 +12,7 @@ PART 1:
 -   [x] pisanje objektnih datotek z zapisi H, E, T in M (poenostavljeni);
 -   [x] handle EmitCode in instrution4 like linstruction3
 -   [x] lep izpis objektne in zbirne kode (kot datoteke .lst, ki jih ustvari SicTools).
--   [ ] EQU (lahko samo z enostavnimi operandi – števila ali simboli)
--   [x] sorted modification records?
+-   [x] EQU (lahko samo z enostavnimi operandi – števila ali simboli)
 
 PART 2:
 
@@ -21,6 +20,6 @@ PART 2:
 -   [ ] podpora polni relokaciji;
 -   [ ] bloki;
 -   [ ] razdelki (angl. control sections);
--   [ ] poljubni izrazi v direktivi EQU;
+-   [x] poljubni izrazi v direktivi EQU;
 -   [ ] makroji;
 -   [ ] optimizacija (računanje konstantnih izrazov med zbiranjem, odstranjevanje mrtve kode, …).

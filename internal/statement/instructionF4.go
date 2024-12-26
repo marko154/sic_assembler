@@ -24,7 +24,6 @@ func NewInstructionF4(label, mnemonic string, opcode byte, operand AddressOperan
 }
 
 func (i *InstructionF4) EmitCode(symtab symtable.SymTable, base, pc int, relocTable map[int]int) []byte {
-	// TODO: handle literal and label like instructionF3
 	byte1 := i.Opcode | i.Operand.Mode
 	byte2, byte3, byte4 := i.resolveAddress(symtab, pc, relocTable)
 	if i.IsIndexed {
@@ -49,7 +48,6 @@ func (i *InstructionF4) resolveAddress(symtab symtable.SymTable, pc int, relocTa
 	panic("invalid address type")
 }
 
-// TODO: this is duplicated in instructionF3.go
 func (i *InstructionF4) resolveLabel(address, pc int, relocTable map[int]int) (byte, byte, byte) {
 	byte2 := byte(0)
 	byte3 := byte(0)
