@@ -37,6 +37,9 @@ func (i *InstructionF3) resolveAddress(symtab symtable.SymTable, base, pc int, r
 	switch v := i.Operand.Address.(type) {
 	case Label:
 		if address, ok := symtab.Get(string(v)); ok {
+			if symtab.IsExpr(string(v)) { // equ expressions are treated as number literals
+				return byte((address >> 8) & 0x0F), byte(address)
+			}
 			return i.resolveLabel(address, base, pc, relocTable)
 		}
 		panic(fmt.Sprintf("undefined symbol: %s", v))

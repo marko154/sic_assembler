@@ -79,6 +79,9 @@ func parseIStatement(label, mnemonic string, args []string, sourceLine string) s
 			return parseInstructionF4(label, mnemonic, args, opInfo.Opcode, sourceLine)
 		}
 	}
+	if mnemonic == "EQU" {
+		return statement.NewEQU(label, args[0], sourceLine)
+	}
 
 	if _, ok := statement.DIRECTIVES[mnemonic]; ok {
 		return parseDirective(label, mnemonic, args, sourceLine)
@@ -158,7 +161,6 @@ func parseAddressOperand(operand string) statement.AddressOperand {
 }
 
 func parseAddress(address string) statement.Address {
-
 	if unicode.IsLetter(rune(address[0])) {
 		return statement.Label(address)
 	}
@@ -205,9 +207,9 @@ func parseData(mnemonic, arg string) statement.Data {
 	*/
 	switch arg[0] {
 	case 'C':
-		return []byte(arg[1:])
+		return []byte(arg[2 : len(arg)-1])
 	case 'X':
-		data, err := hex.DecodeString(arg[1:])
+		data, err := hex.DecodeString(arg[2 : len(arg)-1])
 		if err != nil {
 			panic(err)
 		}

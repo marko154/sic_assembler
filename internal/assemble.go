@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"sic_assembler/internal/expr"
 	"sic_assembler/internal/parser"
 	"sic_assembler/internal/statement"
 	"sic_assembler/internal/symtable"
@@ -50,7 +51,13 @@ func (a *Assembler) activate() {
 			if a.symtable.Has(label) {
 				panic(fmt.Sprintf("Duplicate symbol '%s'", label))
 			}
-			a.symtable.Set(label, locctr)
+			if equ, ok := stmt.(*statement.EQU); ok {
+				expr := parser.ParseEQUExpr(equ.Expr, locctr)
+				a.symtable.Set(label, expr, true)
+			} else {
+				a.symtable.Set(label, expr.Number(locctr), false)
+			}
+
 		}
 		locctr = stmt.GetLocctr(locctr)
 	}
@@ -68,18 +75,15 @@ func (a *Assembler) resolve() {
 		if dir, ok := stmt.(*statement.Directive); ok {
 			switch dir.Mnemonic {
 			case "START":
-				hRecord = NewHRecord(dir.Label, dir.ResolveOperand(a.symtable))
+				hRecord = NewHRecord(dir.Label, dir.ResolveOperand(a.symtable, locctr))
 			case "BASE":
-				base = dir.ResolveOperand(a.symtable)
+				base = dir.ResolveOperand(a.symtable, locctr)
 			case "NOBASE":
 				base = -1
 			case "LTORG":
 				panic("LTORG directive not supported")
-			case "EQU":
-				// TODO: add to symtable
-				panic("EQU directive not supported")
 			case "END":
-				erecord := &ERecord{dir.ResolveOperand(a.symtable)}
+				erecord := &ERecord{dir.ResolveOperand(a.symtable, locctr)}
 				a.WriteRecords(hRecord, builder.GetRecords(), relocationTable, erecord)
 			}
 		}

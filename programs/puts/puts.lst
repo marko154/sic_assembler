@@ -1,0 +1,19 @@
+000000	          	puts	START   0
+000000	B410      			CLEAR   X
+000002	53A021    	loop	LDCH    txt, X
+000005	4B2009    			JSUB    putc
+000008	2D000B    			TIX     #len
+00000B	3B2FF4    			JLT     loop
+00000E	3F2FFD    	halt	J       halt
+000011	DD0001    	putc	WD      #1
+000014	4F0000    			RSUB
+000017	0F2017    	nl	STA     nlA
+00001A	51000A    			LDCH    #10
+00001D	4B2FF1    			JSUB    putc
+000020	03200E    			LDA     nlA
+000023	4F0000    			RSUB
+000026	68656C6C6F20776F726C64	txt	BYTE    C'hello world'
+000031	          	end	EQU     *
+000031	          	len	EQU     end - txt
+000031	000000    	nlA	WORD	0
+000034	          			END     puts

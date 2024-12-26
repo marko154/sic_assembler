@@ -26,7 +26,7 @@ func (i *Directive) GetLabel() string {
 	return i.Label
 }
 
-func (i *Directive) ResolveOperand(symtab *symtable.SymTable) int {
+func (i *Directive) ResolveOperand(symtab *symtable.SymTable, pc int) int {
 	switch v := i.Operand.(type) {
 	case Label:
 		if value, ok := symtab.Get(string(v)); ok {
@@ -36,7 +36,7 @@ func (i *Directive) ResolveOperand(symtab *symtable.SymTable) int {
 	case Number:
 		return int(v)
 	}
-	panic("invalid address type")
+	panic("invalid operand type")
 }
 
 func (i *Directive) GetLocctr(prevLocctr int) int {
