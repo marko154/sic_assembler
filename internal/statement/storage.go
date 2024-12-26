@@ -1,7 +1,6 @@
 package statement
 
 import (
-	"fmt"
 	"sic_assembler/internal/symtable"
 )
 
@@ -27,7 +26,6 @@ func (i *Storage) EmitCode(symtable.SymTable, int, int, map[int]int) []byte {
 	}
 	switch v := i.Operand.(type) {
 	case Data:
-		fmt.Println("DATA", len(v))
 		return []byte(v)
 	}
 	panic("invalid storage operand")

@@ -92,8 +92,6 @@ func (a *Assembler) resolve() {
 		bytes := stmt.EmitCode(*a.symtable, base, locctr, relocationTable)
 		a.writeDebugInfo(prevLocctr, bytes, stmt)
 		builder.WriteCode(prevLocctr, bytes)
-
-		fmt.Printf("writing bytes for instruction: %X\n", bytes)
 	}
 
 	a.writer.Flush()

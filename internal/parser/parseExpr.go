@@ -18,8 +18,6 @@ func ParseEQUExpr(input string, pc int) expr.Expr {
 	input = strings.ReplaceAll(input, "*", " * ")
 
 	tokens := strings.Fields(input)
-	fmt.Printf("parseEQUExpr: %+q\n", tokens)
-
 	_, expr := parseExpr(tokens, pc)
 	return expr
 }
